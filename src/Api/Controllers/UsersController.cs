@@ -34,10 +34,14 @@ public class UsersController : ControllerBase
 
     [HttpPost("Patient")]
     public async Task<IActionResult> CreatePatient(PatientRequest request)
-        => this.ToActionResult(await _userService.CreateAsync(request));
+    {
+        return this.ToActionResult(await _userService.CreateAsync(request));
+    }
 
     [HttpPost("Login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
-        => this.ToActionResult(await _userService.LoginAsync(request));
+    {
+        return this.ToActionResult(await _userService.LoginAsync(request));
+    }
 }

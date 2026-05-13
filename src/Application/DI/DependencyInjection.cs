@@ -13,11 +13,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication (this IServiceCollection services)
     {
+        services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IUserService, UserService>();
 
         services.AddScoped<IUserFactory, UserFactory>();
 
-        services.AddValidatorsFromAssemblyContaining<UserValidator>();
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         return services;
     }

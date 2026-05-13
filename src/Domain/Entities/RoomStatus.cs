@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities;
 
-public partial class UserStatus
+public partial class RoomStatus
 {
     public int StatusId { get; set; }
 
@@ -8,5 +8,5 @@ public partial class UserStatus
 
     public string? Description { get; set; }
 
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 }

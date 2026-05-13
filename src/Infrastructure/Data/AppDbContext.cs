@@ -12,6 +12,10 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<Room> Rooms { get; set; }
+
+    public virtual DbSet<RoomStatus> RoomStatuses { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserGender> UserGenders { get; set; }
@@ -39,6 +43,46 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.RoleName)
                 .HasMaxLength(50)
                 .HasColumnName("role_name");
+        });
+
+        modelBuilder.Entity<Room>(entity =>
+        {
+            entity.HasKey(e => e.RoomId).HasName("rooms_pkey");
+
+            entity.ToTable("rooms");
+
+            entity.Property(e => e.RoomId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("room_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.RoomName)
+                .HasMaxLength(50)
+                .HasColumnName("room_name");
+            entity.Property(e => e.StatusId).HasColumnName("status_id");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.Rooms)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("rooms_status_id_fkey");
+        });
+
+        modelBuilder.Entity<RoomStatus>(entity =>
+        {
+            entity.HasKey(e => e.StatusId).HasName("room_statuses_pkey");
+
+            entity.ToTable("room_statuses");
+
+            entity.Property(e => e.StatusId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("status_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(100)
+                .HasColumnName("description");
+            entity.Property(e => e.StatusName)
+                .HasMaxLength(50)
+                .HasColumnName("status_name");
         });
 
         modelBuilder.Entity<User>(entity =>
