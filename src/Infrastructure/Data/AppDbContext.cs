@@ -16,6 +16,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<RoomStatus> RoomStatuses { get; set; }
 
+    public virtual DbSet<Supplier> Suppliers { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserGender> UserGenders { get; set; }
@@ -83,6 +85,67 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.StatusName)
                 .HasMaxLength(50)
                 .HasColumnName("status_name");
+        });
+
+        modelBuilder.Entity<Supplier>(entity =>
+        {
+            entity.HasKey(e => e.SupplierId).HasName("suppliers_pkey");
+
+            entity.ToTable("suppliers");
+
+            entity.HasIndex(e => e.ContactEmail, "suppliers_contact_email_key").IsUnique();
+
+            entity.HasIndex(e => e.ContactPhone, "suppliers_contact_phone_key").IsUnique();
+
+            entity.HasIndex(e => e.SupplierCode, "suppliers_supplier_code_key").IsUnique();
+
+            entity.Property(e => e.SupplierId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("supplier_id");
+            entity.Property(e => e.Address)
+                .HasMaxLength(500)
+                .HasColumnName("address");
+            entity.Property(e => e.ContactEmail)
+                .HasMaxLength(255)
+                .HasColumnName("contact_email");
+            entity.Property(e => e.ContactPhone)
+                .HasMaxLength(15)
+                .HasColumnName("contact_phone");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.DeletedBy).HasColumnName("deleted_by");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.SupplierCode)
+                .HasMaxLength(20)
+                .HasColumnName("supplier_code");
+            entity.Property(e => e.SupplierName)
+                .HasMaxLength(150)
+                .HasColumnName("supplier_name");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.SupplierCreatedByNavigations)
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("suppliers_created_by_fkey");
+
+            entity.HasOne(d => d.DeletedByNavigation).WithMany(p => p.SupplierDeletedByNavigations)
+                .HasForeignKey(d => d.DeletedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("suppliers_deleted_by_fkey");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.SupplierUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("suppliers_updated_by_fkey");
         });
 
         modelBuilder.Entity<User>(entity =>

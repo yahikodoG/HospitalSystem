@@ -31,13 +31,13 @@ public class RoomsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(RoomRequest request)
+    public async Task<IActionResult> Create([FromBody] RoomRequest request)
     {
         return this.ToActionResult(await _roomService.CreateAsync(request));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] RoomRequest request)
+    public async Task<IActionResult> Update([FromBody] RoomRequest request, int id)
     {
         return this.ToActionResult(await _roomService.UpdateAsync(request, id));
     }

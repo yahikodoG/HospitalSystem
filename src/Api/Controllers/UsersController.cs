@@ -33,7 +33,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("Patient")]
-    public async Task<IActionResult> CreatePatient(PatientRequest request)
+    public async Task<IActionResult> CreatePatient([FromBody] PatientRequest request)
     {
         return this.ToActionResult(await _userService.CreateAsync(request));
     }

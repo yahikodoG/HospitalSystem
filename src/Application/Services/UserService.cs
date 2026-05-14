@@ -7,7 +7,6 @@ using Application.Interfaces.Factories;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappings;
-using Application.Validators;
 using Domain.Entities;
 using FluentValidation;
 

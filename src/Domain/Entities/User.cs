@@ -52,6 +52,12 @@ public partial class User
 
     public virtual UserStatus? Status { get; set; }
 
+    public virtual ICollection<Supplier> SupplierCreatedByNavigations { get; set; } = new List<Supplier>();
+
+    public virtual ICollection<Supplier> SupplierDeletedByNavigations { get; set; } = new List<Supplier>();
+
+    public virtual ICollection<Supplier> SupplierUpdatedByNavigations { get; set; } = new List<Supplier>();
+
     public virtual User? UpdatedByNavigation { get; set; }
 
     public virtual ICollection<UserRole> UserRoleAssignedByNavigations { get; set; } = new List<UserRole>();
