@@ -30,7 +30,7 @@ public class SupplierService : ISupplierService
     public async Task<List<SupplierResponse>> GetAllAsync()
     {
         var suppliers = await _supplierRepository.GetAllAsync();
-        return suppliers.Select(s => s.MaptoResponse()).ToList();
+        return suppliers.Select(s => s.MapToResponse()).ToList();
     }
 
     public async Task<ResponseValue<SupplierResponse?>> GetByIdAsync(int id)
@@ -41,7 +41,7 @@ public class SupplierService : ISupplierService
             return ResponseValue<SupplierResponse?>.NotFound(SupplierErrors.ERR_NOT_FOUND);
 
         return ResponseValue<SupplierResponse?>.Success(
-            supplier.MaptoResponse(),
+            supplier.MapToResponse(),
             "Lấy nhà cung cấp thành công."
         );
     }
@@ -68,7 +68,7 @@ public class SupplierService : ISupplierService
         await _uow.SaveChangesAsync();
 
         return ResponseValue<SupplierResponse>.Success(
-            supplier.MaptoResponse(),
+            supplier.MapToResponse(),
             "Tạo nhà cung cấp thành công."
         );
     }
@@ -97,7 +97,7 @@ public class SupplierService : ISupplierService
         await _uow.SaveChangesAsync();
 
         return ResponseValue<SupplierResponse>.Success(
-            supplier.MaptoResponse(),
+            supplier.MapToResponse(),
             "Cập nhật nhà cung cấp thành công."
         );
     }

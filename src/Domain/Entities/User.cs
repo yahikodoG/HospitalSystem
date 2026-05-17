@@ -1,4 +1,7 @@
-﻿namespace Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Domain.Entities;
 
 public partial class User
 {
@@ -49,6 +52,12 @@ public partial class User
     public virtual ICollection<User> InverseDeletedByNavigation { get; set; } = new List<User>();
 
     public virtual ICollection<User> InverseUpdatedByNavigation { get; set; } = new List<User>();
+
+    public virtual ICollection<Medicine> MedicineCreatedByNavigations { get; set; } = new List<Medicine>();
+
+    public virtual ICollection<Medicine> MedicineDeletedByNavigations { get; set; } = new List<Medicine>();
+
+    public virtual ICollection<Medicine> MedicineUpdatedByNavigations { get; set; } = new List<Medicine>();
 
     public virtual UserStatus? Status { get; set; }
 

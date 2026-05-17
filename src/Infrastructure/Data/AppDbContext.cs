@@ -1,4 +1,6 @@
-﻿using Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -10,11 +12,23 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Medicine> Medicines { get; set; }
+
+    public virtual DbSet<MedicineStatus> MedicineStatuses { get; set; }
+
+    public virtual DbSet<MedicineType> MedicineTypes { get; set; }
+
+    public virtual DbSet<MedicineUnit> MedicineUnits { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
 
     public virtual DbSet<RoomStatus> RoomStatuses { get; set; }
+
+    public virtual DbSet<Service> Services { get; set; }
+
+    public virtual DbSet<ServiceType> ServiceTypes { get; set; }
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
@@ -28,6 +42,163 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder
+            .HasPostgresEnum("auth", "aal_level", new[] { "aal1", "aal2", "aal3" })
+            .HasPostgresEnum("auth", "code_challenge_method", new[] { "s256", "plain" })
+            .HasPostgresEnum("auth", "factor_status", new[] { "unverified", "verified" })
+            .HasPostgresEnum("auth", "factor_type", new[] { "totp", "webauthn", "phone" })
+            .HasPostgresEnum("auth", "oauth_authorization_status", new[] { "pending", "approved", "denied", "expired" })
+            .HasPostgresEnum("auth", "oauth_client_type", new[] { "public", "confidential" })
+            .HasPostgresEnum("auth", "oauth_registration_type", new[] { "dynamic", "manual" })
+            .HasPostgresEnum("auth", "oauth_response_type", new[] { "code" })
+            .HasPostgresEnum("auth", "one_time_token_type", new[] { "confirmation_token", "reauthentication_token", "recovery_token", "email_change_token_new", "email_change_token_current", "phone_change_token" })
+            .HasPostgresEnum("realtime", "action", new[] { "INSERT", "UPDATE", "DELETE", "TRUNCATE", "ERROR" })
+            .HasPostgresEnum("realtime", "equality_op", new[] { "eq", "neq", "lt", "lte", "gt", "gte", "in" })
+            .HasPostgresEnum("storage", "buckettype", new[] { "STANDARD", "ANALYTICS", "VECTOR" })
+            .HasPostgresExtension("extensions", "pg_stat_statements")
+            .HasPostgresExtension("extensions", "pgcrypto")
+            .HasPostgresExtension("extensions", "uuid-ossp")
+            .HasPostgresExtension("vault", "supabase_vault");
+
+        modelBuilder.Entity<Medicine>(entity =>
+        {
+            entity.HasKey(e => e.MedicineId).HasName("medicines_pkey");
+
+            entity.ToTable("medicines");
+
+            entity.HasIndex(e => e.MedicineStatusId, "idx_medicines_status");
+
+            entity.HasIndex(e => e.MedicineTypeId, "idx_medicines_type");
+
+            entity.HasIndex(e => e.MedicineUnitId, "idx_medicines_unit");
+
+            entity.HasIndex(e => e.MedicineCode, "medicines_medicine_code_key").IsUnique();
+
+            entity.HasIndex(e => e.MedicineName, "medicines_medicine_name_key").IsUnique();
+
+            entity.Property(e => e.MedicineId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("medicine_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.DeletedBy).HasColumnName("deleted_by");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.MedicineCode)
+                .HasMaxLength(20)
+                .HasColumnName("medicine_code");
+            entity.Property(e => e.MedicineName)
+                .HasMaxLength(100)
+                .HasColumnName("medicine_name");
+            entity.Property(e => e.MedicineStatusId).HasColumnName("medicine_status_id");
+            entity.Property(e => e.MedicineTypeId).HasColumnName("medicine_type_id");
+            entity.Property(e => e.MedicineUnitId).HasColumnName("medicine_unit_id");
+            entity.Property(e => e.SellPrice)
+                .HasPrecision(18)
+                .HasColumnName("sell_price");
+            entity.Property(e => e.StockQuantity)
+                .HasDefaultValue(0)
+                .HasColumnName("stock_quantity");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.MedicineCreatedByNavigations)
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("medicines_created_by_fkey");
+
+            entity.HasOne(d => d.DeletedByNavigation).WithMany(p => p.MedicineDeletedByNavigations)
+                .HasForeignKey(d => d.DeletedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("medicines_deleted_by_fkey");
+
+            entity.HasOne(d => d.MedicineStatus).WithMany(p => p.Medicines)
+                .HasForeignKey(d => d.MedicineStatusId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("medicines_medicine_status_id_fkey");
+
+            entity.HasOne(d => d.MedicineType).WithMany(p => p.Medicines)
+                .HasForeignKey(d => d.MedicineTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("medicines_medicine_type_id_fkey");
+
+            entity.HasOne(d => d.MedicineUnit).WithMany(p => p.Medicines)
+                .HasForeignKey(d => d.MedicineUnitId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("medicines_medicine_unit_id_fkey");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.MedicineUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("medicines_updated_by_fkey");
+        });
+
+        modelBuilder.Entity<MedicineStatus>(entity =>
+        {
+            entity.HasKey(e => e.MedicineStatusId).HasName("medicine_statuses_pkey");
+
+            entity.ToTable("medicine_statuses");
+
+            entity.HasIndex(e => e.MedicineStatusName, "medicine_statuses_medicine_status_name_key").IsUnique();
+
+            entity.Property(e => e.MedicineStatusId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("medicine_status_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.MedicineStatusName)
+                .HasMaxLength(50)
+                .HasColumnName("medicine_status_name");
+        });
+
+        modelBuilder.Entity<MedicineType>(entity =>
+        {
+            entity.HasKey(e => e.MedicineTypeId).HasName("medicine_types_pkey");
+
+            entity.ToTable("medicine_types");
+
+            entity.HasIndex(e => e.MedicineTypeName, "medicine_types_medicine_type_name_key").IsUnique();
+
+            entity.Property(e => e.MedicineTypeId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("medicine_type_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.MedicineTypeName)
+                .HasMaxLength(50)
+                .HasColumnName("medicine_type_name");
+        });
+
+        modelBuilder.Entity<MedicineUnit>(entity =>
+        {
+            entity.HasKey(e => e.MedicineUnitId).HasName("medicine_units_pkey");
+
+            entity.ToTable("medicine_units");
+
+            entity.HasIndex(e => e.MedicineUnitName, "medicine_units_medicine_unit_name_key").IsUnique();
+
+            entity.Property(e => e.MedicineUnitId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("medicine_unit_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.MedicineUnitName)
+                .HasMaxLength(50)
+                .HasColumnName("medicine_unit_name");
+        });
+
         modelBuilder.Entity<Role>(entity =>
         {
             entity.HasKey(e => e.RoleId).HasName("roles_pkey");
@@ -85,6 +256,58 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.StatusName)
                 .HasMaxLength(50)
                 .HasColumnName("status_name");
+        });
+
+        modelBuilder.Entity<Service>(entity =>
+        {
+            entity.HasKey(e => e.ServiceId).HasName("services_pkey");
+
+            entity.ToTable("services");
+
+            entity.HasIndex(e => e.ServiceName, "idx_services_name");
+
+            entity.HasIndex(e => e.ServiceTypeId, "idx_services_type");
+
+            entity.HasIndex(e => e.ServiceCode, "services_service_code_key").IsUnique();
+
+            entity.Property(e => e.ServiceId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("service_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(500)
+                .HasColumnName("description");
+            entity.Property(e => e.Price)
+                .HasPrecision(18)
+                .HasColumnName("price");
+            entity.Property(e => e.ServiceCode)
+                .HasMaxLength(20)
+                .HasColumnName("service_code");
+            entity.Property(e => e.ServiceName)
+                .HasMaxLength(150)
+                .HasColumnName("service_name");
+            entity.Property(e => e.ServiceTypeId).HasColumnName("service_type_id");
+
+            entity.HasOne(d => d.ServiceType).WithMany(p => p.Services)
+                .HasForeignKey(d => d.ServiceTypeId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("services_service_type_id_fkey");
+        });
+
+        modelBuilder.Entity<ServiceType>(entity =>
+        {
+            entity.HasKey(e => e.ServiceTypeId).HasName("service_types_pkey");
+
+            entity.ToTable("service_types");
+
+            entity.Property(e => e.ServiceTypeId)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("service_type_id");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .HasColumnName("description");
+            entity.Property(e => e.ServiceTypeName)
+                .HasMaxLength(50)
+                .HasColumnName("service_type_name");
         });
 
         modelBuilder.Entity<Supplier>(entity =>

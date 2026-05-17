@@ -1,6 +1,5 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
-using Domain.Entities;
 using Infrastructure.Authentication;
 using Infrastructure.Repositories;
 using Infrastructure.Security;
@@ -14,6 +13,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
