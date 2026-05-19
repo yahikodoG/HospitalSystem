@@ -1,12 +1,14 @@
 using Application.Common.Errors;
+using Application.Common.Extensions;
+using Application.Common.Pagination;
 using Application.Common.Responses;
 using Application.DTOs.Rooms;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappings;
-using Domain.Entities;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services;
 
@@ -26,10 +28,20 @@ public class RoomService : IRoomService
         _uow = uow;
     }
 
-    public async Task<List<RoomResponse>> GetAllAsync()
+    public async Task<ResponseValue<PagedResult<RoomResponse>>> GetAllAsync(string? search, int page, int pageSize)
     {
-        var rooms = await _roomRepository.GetAllAsync();
-        return rooms.Select(r => r.MapToResponse()).ToList();
+        var rooms = _roomRepository
+            .GetQueryable()
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+            rooms = rooms.Where(r => r.RoomName.Contains(search));
+
+        var result = await rooms
+            .Select(s => s.MapToResponse())
+            .ToPagedResultAsync(page, pageSize);
+
+        return ResponseValue<PagedResult<RoomResponse>>.Success(result, "Lấy danh sách phòng thành công.");
     }
 
     public async Task<ResponseValue<RoomResponse?>> GetByIdAsync(int id)
@@ -45,7 +57,9 @@ public class RoomService : IRoomService
         );
     }
 
-    public async Task<ResponseValue<RoomResponse>> CreateAsync(RoomRequest request)
+    public async Task<ResponseValue<RoomResponse>> CreateAsync(
+        RoomRequest request,
+        CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -54,12 +68,15 @@ public class RoomService : IRoomService
             return ResponseValue<RoomResponse>.BadRequest(errors);
         }
 
-        var room = new Room
+        var isDuplicate = await _roomRepository.ExistsByNameAsync(request.RoomName);
+
+        if (isDuplicate)
         {
-            RoomName = request.RoomName,
-            StatusId = request.StatusId,
-            Description = request.Description
-        };
+            return ResponseValue<RoomResponse>
+                .Conflict(RoomErrors.ERR_DUPLICATE);
+        }
+
+        var room = request.MapToEntity();
 
         await _roomRepository.AddAsync(room);
         await _uow.SaveChangesAsync();
@@ -73,7 +90,7 @@ public class RoomService : IRoomService
     public async Task<ResponseValue<RoomResponse>> UpdateAsync(RoomRequest request, int id)
     {
         var validationResult = await _validator.ValidateAsync(request);
-        if(!validationResult.IsValid)
+        if (!validationResult.IsValid)
         {
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
             return ResponseValue<RoomResponse>.BadRequest(errors);
@@ -104,7 +121,10 @@ public class RoomService : IRoomService
         if (room == null)
             return ResponseValue<bool>.NotFound(RoomErrors.ERR_NOT_FOUND);
 
-        _roomRepository.Update(room);
+        // if (await _roomRepository.HasAppointmentsAsync(id))
+        //     return ResponseValue<bool>.Conflict(RoomErrors.ERR_IN_USE);
+
+        _roomRepository.Delete(room);
         await _uow.SaveChangesAsync();
 
         return ResponseValue<bool>.Success(true, "Xóa phòng thành công.");

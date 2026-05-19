@@ -224,21 +224,55 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("rooms");
 
+            entity.HasIndex(e => e.DeletedAt, "idx_rooms_deleted_at");
+
+            entity.HasIndex(e => e.RoomName, "idx_rooms_room_name");
+
+            entity.HasIndex(e => e.StatusId, "idx_rooms_status_id");
+
+            entity.HasIndex(e => e.RoomCode, "rooms_room_code_key").IsUnique();
+
             entity.Property(e => e.RoomId)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("room_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            entity.Property(e => e.DeletedBy).HasColumnName("deleted_by");
             entity.Property(e => e.Description)
                 .HasMaxLength(200)
                 .HasColumnName("description");
+            entity.Property(e => e.RoomCode)
+                .HasMaxLength(20)
+                .HasColumnName("room_code");
             entity.Property(e => e.RoomName)
                 .HasMaxLength(50)
                 .HasColumnName("room_name");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.RoomCreatedByNavigations)
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("rooms_created_by_fkey");
+
+            entity.HasOne(d => d.DeletedByNavigation).WithMany(p => p.RoomDeletedByNavigations)
+                .HasForeignKey(d => d.DeletedBy)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("rooms_deleted_by_fkey");
 
             entity.HasOne(d => d.Status).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.StatusId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("rooms_status_id_fkey");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.RoomUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("rooms_updated_by_fkey");
         });
 
         modelBuilder.Entity<RoomStatus>(entity =>

@@ -17,11 +17,12 @@ public class RoomsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] int page,
+        [FromQuery] int pageSize)
     {
-        var result = await _roomService.GetAllAsync();
-
-        return Ok(result);
+        return this.ToActionResult(await _roomService.GetAllAsync(search, page, pageSize));
     }
 
     [HttpGet("{id}")]
@@ -31,9 +32,11 @@ public class RoomsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] RoomRequest request)
+    public async Task<IActionResult> Create(
+        [FromBody] RoomRequest request,
+        CancellationToken cancellationToken)
     {
-        return this.ToActionResult(await _roomService.CreateAsync(request));
+        return this.ToActionResult(await _roomService.CreateAsync(request, cancellationToken));
     }
 
     [HttpPut("{id}")]

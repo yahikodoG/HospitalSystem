@@ -13,6 +13,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication (this IServiceCollection services)
     {
+        services.AddScoped<IMedicineService, MedicineService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IServiceService, ServiceService>();
         services.AddScoped<ISupplierService, SupplierService>();

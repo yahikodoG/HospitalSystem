@@ -59,6 +59,12 @@ public partial class User
 
     public virtual ICollection<Medicine> MedicineUpdatedByNavigations { get; set; } = new List<Medicine>();
 
+    public virtual ICollection<Room> RoomCreatedByNavigations { get; set; } = new List<Room>();
+
+    public virtual ICollection<Room> RoomDeletedByNavigations { get; set; } = new List<Room>();
+
+    public virtual ICollection<Room> RoomUpdatedByNavigations { get; set; } = new List<Room>();
+
     public virtual UserStatus? Status { get; set; }
 
     public virtual ICollection<Supplier> SupplierCreatedByNavigations { get; set; } = new List<Supplier>();

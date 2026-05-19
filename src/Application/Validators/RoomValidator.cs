@@ -11,6 +11,10 @@ public class RoomValidator : AbstractValidator<RoomRequest>
             .NotEmpty().WithMessage("Tên phòng không được để trống.")
             .MaximumLength(50).WithMessage("Tên phòng không được vượt quá 50 ký tự.");
 
+        RuleFor(x=>x.StatusId)
+            .NotNull().WithMessage("Chưa chọn trạng thái phòng.")
+            .GreaterThan(0).WithMessage("Trạng thái không hợp lệ.");
+
         RuleFor(x => x.Description)
             .MaximumLength(200).WithMessage("Mô tả không được vượt quá 200 ký tự.");
     }

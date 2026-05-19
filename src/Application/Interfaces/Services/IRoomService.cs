@@ -1,3 +1,4 @@
+using Application.Common.Pagination;
 using Application.Common.Responses;
 using Application.DTOs.Rooms;
 
@@ -5,9 +6,9 @@ namespace Application.Interfaces.Services;
 
 public interface IRoomService
 {
-    Task<List<RoomResponse>> GetAllAsync();
+    Task<ResponseValue<PagedResult<RoomResponse>>> GetAllAsync(string? search, int page, int pageSize);
     Task<ResponseValue<RoomResponse?>> GetByIdAsync(int id);
-    Task<ResponseValue<RoomResponse>> CreateAsync(RoomRequest request);
+    Task<ResponseValue<RoomResponse>> CreateAsync(RoomRequest request, CancellationToken cancellationToken);
     Task<ResponseValue<RoomResponse>> UpdateAsync(RoomRequest request, int id);
     Task<ResponseValue<bool>> DeleteAsync(int id);
 }

@@ -12,6 +12,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        services.AddScoped<IMedicineRepository, MedicineRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();

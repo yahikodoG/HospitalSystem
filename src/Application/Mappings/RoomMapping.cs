@@ -15,4 +15,14 @@ public static class RoomMapping
             Description = room.Description
         };
     }
+
+    public static Room MapToEntity(this RoomRequest request)
+    {
+        return new Room
+        {
+            RoomName = request.RoomName,
+            StatusId = request.StatusId,
+            Description = request.Description
+        };
+    }
 }
